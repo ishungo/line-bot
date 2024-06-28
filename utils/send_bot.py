@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import sys
 from dotenv import load_dotenv
 
 load_dotenv("../.env")
@@ -29,7 +30,10 @@ def send_messages(message):
 
 
 def main():
-    message = "こんにちは"
+    message = sys.argv[1]
+    if os.path.isfile(message):
+        message = open(message, 'r').read()
+    print(message)
     send_messages(message)
 
 if __name__ == '__main__':
