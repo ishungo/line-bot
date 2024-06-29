@@ -42,7 +42,7 @@ CHANNEL_SECRET = os.getenv("CHANNEL_SECRET")
 handler = WebhookHandler(CHANNEL_SECRET)
 configuration = Configuration(access_token=ACCESS_TOKEN)
 
-@app.route('/', methods=['GET'])
+@app.route('/welcome', methods=['GET'])
 def hello():
     name = request.args.get('name', 'guest')
     print(name)
@@ -88,4 +88,4 @@ def handle_message(event):
         )
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host="0.0.0.0", port=8886)
