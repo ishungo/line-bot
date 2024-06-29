@@ -2,7 +2,7 @@ import sys
 import json
 from pathlib import Path
 import os
-from flask import Flask, abort, request
+from flask import Flask, abort, request, jsonify
 from dotenv import load_dotenv
 from linebot.v3.webhook import (
     WebhookHandler
@@ -25,10 +25,11 @@ from linebot.v3.webhooks import (
 SCRIPT_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 UTIL_PATH = SCRIPT_DIR.parent.parent / 'utils'
 CHECK_IP_PATH = UTIL_PATH / 'check_ip'
-sys.path.append(UTIL_PATH)
+sys.path.append(str(UTIL_PATH))
 from check_ip import check_ip
-ENV_DIR = SCRIPT_DIR.parent.parent
-load_dotenv(ENV_DIR)
+ENV_DIR = SCRIPT_DIR.parent.parent / '.env'
+
+load_dotenv(str(ENV_DIR))
 
 app = Flask(__name__)
 
@@ -37,8 +38,16 @@ INTERFACE = os.getenv("INTERFACE")
 ACCESS_TOKEN = os.getenv("ACCESS_TOKEN")
 CHANNEL_SECRET = os.getenv("CHANNEL_SECRET")
 
+
 handler = WebhookHandler(CHANNEL_SECRET)
 configuration = Configuration(access_token=ACCESS_TOKEN)
+
+@app.route('/', methods=['GET'])
+def hello():
+    name = request.args.get('name', 'guest')
+    print(name)
+    msg = f"Hello, {name.upper()}!!"
+    return jsonify(msg)
 
 
 @app.route("/callback", methods=['POST'])
@@ -78,9 +87,5 @@ def handle_message(event):
             )
         )
 
-def main():
-    pass
-
-
 if __name__ == "__main__":
-    main()
+    app.run(debug=True)
