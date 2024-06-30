@@ -42,12 +42,19 @@ CHANNEL_SECRET = os.getenv("CHANNEL_SECRET")
 handler = WebhookHandler(CHANNEL_SECRET)
 configuration = Configuration(access_token=ACCESS_TOKEN)
 
-@app.route('/welcome', methods=['GET'])
+
+@app.route('/')
 def hello():
+   name = "Flask Hello World"
+   return name
+
+
+@app.route('/welcome', methods=['GET'])
+def welcome():
     name = request.args.get('name', 'guest')
     print(name)
     msg = f"Hello, {name.upper()}!!"
-    return jsonify(msg)
+    return msg
 
 
 @app.route("/callback", methods=['POST'])
@@ -88,4 +95,4 @@ def handle_message(event):
         )
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=8886)
+    app.run()
