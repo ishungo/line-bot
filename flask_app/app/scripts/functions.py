@@ -86,7 +86,7 @@ def get_weather(city):
         ret += f"\n国: {sys['country']}"
         ret += f"\n天気: {description.capitalize()}"
         ret += f"\n気温: {temp}°C"
-        ret += f"\n最低気温: {temp_min}°"
+        ret += f"\n最低気温: {temp_min}°C"
         ret += f"\n最高気温: {temp_max}°C"
         ret += f"\n気圧: {pressure} hPa"
         ret += f"\n湿度: {humidity}%"
