@@ -2,7 +2,7 @@ import sys
 import json
 from pathlib import Path
 import os
-from flask import Flask, abort, request, jsonify
+from flask import Flask, abort, request, render_template
 from dotenv import load_dotenv
 import scripts.functions as fcs
 from linebot import (
@@ -64,7 +64,22 @@ def welcome():
 def test():
    return 'I\'m alive!'
 
- 
+@app.route("/message_test", methods=['GET'])
+def message_test():
+   return render_template('app/message_test.html')
+
+@app.route("/send_test", methods=['POST'])
+def send_test():
+   model = "gpt-3.5-turbo"
+   msg = request.form['message']
+   print(msg)
+   ret_msg = fcs.create_responce(msg, model)
+   print(ret_msg)
+   ret_msg = ret_msg.replace('\n', '<br>')
+   print(ret_msg)
+   return ret_msg
+
+
 @app.route("/callback", methods=['POST'])
 def callback():
    # get X-Line-Signature header value
@@ -84,7 +99,7 @@ def callback():
    return 'OK'
 
 @handler.add(MessageEvent, message=TextMessageContent)
-def handle_message(event):   
+def handle_message(event):
    print('message is received')
    model = "gpt-3.5-turbo"
    input_msg = event.message.text
@@ -95,8 +110,7 @@ def handle_message(event):
       f.write(event.message.text + '\n')
 
    with ApiClient(configuration) as api_client:
-      output_msg = fcs.generate_text(input_msg, model)
-      
+      output_msg = fcs.create_responce(input_msg, model)
 
       line_bot_api = MessagingApi(api_client)
       line_bot_api.reply_message_with_http_info(
@@ -105,6 +119,6 @@ def handle_message(event):
             messages=[TextMessage(text=output_msg)]
          )
       )
-    
+
 if __name__ == "__main__":
     app.run()
