@@ -91,7 +91,7 @@ def get_weather(city):
         ret += f"\n気圧: {pressure} hPa"
         ret += f"\n湿度: {humidity}%"
         ret += f"\n風速: {wind_speed} m/s"
-        ret += f"\n風光: {wind_deg}°"
+        ret += f"\n風向: {wind_deg}°"
         ret += f"\n日の出: {to_jst(dt.fromtimestamp(sunrise))}"
         ret += f"\n日没: {to_jst(dt.fromtimestamp(sunset))}"
     elif response.status_code == 404:
