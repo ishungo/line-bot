@@ -6,13 +6,16 @@ from pathlib import Path
 from datetime import datetime as dt
 from dotenv import load_dotenv
 from openai import OpenAI
+import pytz
+jst = pytz.timezone('Asia/Tokyo')
+print(jst)
+# Asia/Tokyo
 
 SCRIPT_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 ENV_DIR = SCRIPT_DIR.parent.parent.parent / '.env'
 load_dotenv(str(ENV_DIR))
 API_KEY = os.getenv("OPENAI_API_KEY")
 WEATHER_API_KEY = os.getenv("OPEN_WEATHER_API_KEY")
-print(WEATHER_API_KEY)
 
 
 FIRST_PROMPT = "上記の文章は、以下のどの選択肢に該当する文章ですか？"
@@ -89,14 +92,17 @@ def get_weather(city):
         ret += f"\n湿度: {humidity}%"
         ret += f"\n風速: {wind_speed} m/s"
         ret += f"\n風光: {wind_deg}°"
-        ret += f"\n日の出: {dt.fromtimestamp(sunrise)}"
-        ret += f"\n日没: {dt.fromtimestamp(sunset)}"
+        ret += f"\n日の出: {to_jst(dt.fromtimestamp(sunrise))}"
+        ret += f"\n日没: {to_jst(dt.fromtimestamp(sunset))}"
     elif response.status_code == 404:
         ret = "天気の取得に失敗しました"
     else:
         ret = "エラーが発生しました"
     return ret
 
+
+def to_jst(dt):
+    return dt.astimezone(jst).strftime('%Y-%m-%d %H:%M:%S')
 
 def main():
     msg = "ubuntuとは何ですか？"
