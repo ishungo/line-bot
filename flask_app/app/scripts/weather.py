@@ -177,10 +177,12 @@ def get_weather_forecast(city, date):
             ret += f"\n湿度: {humidity}%"
             ret += f"\n風速: {wind_speed} m/s"
             ret += f"\n風向: {wind_deg}°"
-    elif response.status_code == 404 or ret == "":
+    elif response.status_code == 404:
         ret = f"{city}の{date.strftime('%m月%d日')}の天気は取得できませんでした"
     else:
         ret = "エラーが発生しました"
+    if ret == "":
+        ret = f"{city}の{date.strftime('%m月%d日')}の天気は取得できませんでした"
     return ret
 
 
