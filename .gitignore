@@ -3,5 +3,6 @@
 line-bot-venv
 **/*~
 **/*_log/
+**/*_logs/
 Apache2/
 utils/message.txt
