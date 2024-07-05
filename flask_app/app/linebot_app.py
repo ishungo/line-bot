@@ -1,6 +1,7 @@
 import sys
 import json
 from pathlib import Path
+from datetime import datetime as dt
 import os
 from flask import Flask, abort, request, render_template
 from dotenv import load_dotenv
@@ -25,6 +26,8 @@ from linebot.v3.webhooks import (
     MessageEvent,
     TextMessageContent
 )
+import pytz
+jst = pytz.timezone('Asia/Tokyo')
 
 SCRIPT_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 UTIL_PATH = SCRIPT_DIR.parent.parent / 'utils'
@@ -70,13 +73,9 @@ def message_test():
 
 @app.route("/send_test", methods=['POST'])
 def send_test():
-   model = "gpt-3.5-turbo"
    msg = request.form['message']
-   print(msg)
-   ret_msg = fcs.create_responce(msg, model)
-   print(ret_msg)
+   ret_msg = fcs.create_responce(msg)
    ret_msg = ret_msg.replace('\n', '<br>')
-   print(ret_msg)
    return ret_msg
 
 
@@ -101,16 +100,17 @@ def callback():
 @handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
    print('message is received')
-   model = "gpt-3.5-turbo"
    input_msg = event.message.text
 
    # 受信したテキストの保存
+   now = dt.now(jst).strftime("%Y-%m-%d %H:%M:%S")
    log_file = "/home/ubuntu/line-bot/log.txt"
    with open(log_file, 'a', encoding='utf-8') as f:
-      f.write(event.message.text + '\n')
+      f.write(f"[Time: {now}]\n")
+      f.write(input_msg + '\n')
 
    with ApiClient(configuration) as api_client:
-      output_msg = fcs.create_responce(input_msg, model)
+      output_msg = fcs.create_responce(input_msg)
 
       line_bot_api = MessagingApi(api_client)
       line_bot_api.reply_message_with_http_info(
@@ -119,6 +119,8 @@ def handle_message(event):
             messages=[TextMessage(text=output_msg)]
          )
       )
+      with open(log_file, 'a', encoding='utf-8') as f:
+         f.write(output_msg + '\n')
 
 if __name__ == "__main__":
     app.run()
