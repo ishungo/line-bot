@@ -29,6 +29,7 @@ def generate_text(msg):
     time = dt.now(jst).strftime("%Y-%m-%d %H:%M:%S")
     with open(GPT_LOG_PATH, "a", encoding = 'utf-8') as f:
         f.write(f"[Time: {time}]\n")
+        f.write(f"Model: {GPT_MODEL}\n")
         f.write(f"Input:\n{msg}\n")
         f.write(f"Output:\n {ret}\n")
     return ret

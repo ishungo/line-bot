@@ -4,13 +4,61 @@ from pathlib import Path
 import os
 import pytz
 import requests
+from .text_generate import generate_text
 jst = pytz.timezone('Asia/Tokyo')
 SCRIPT_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 ENV_DIR = SCRIPT_DIR.parent.parent.parent / '.env'
 load_dotenv(str(ENV_DIR))
 WEATHER_API_KEY = os.getenv("OPEN_WEATHER_API_KEY")
 WEEKDAYS = ["月", "火", "水", "木", "金", "土", "日"]
+WEEKDAYS_EN = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
+
+
+def get_weather_info(msg):
+    weather_prompt = make_weather_prompt()
+    city_date_gpt = generate_text(msg + weather_prompt)
+    try:
+        city, date = extract_city_date(city_date_gpt)
+        print(city, date)
+        ret = get_weather(city, date)
+    except:
+        ret = "頂いたメッセージの中から地名と日付に関する情報を取得できませんでした。"
+
+    return ret
+
+def extract_city_date(msg):
+    city = "不明"
+    date = "不明"
+    msg = msg.replace(" ", "").replace("場所:", " 場所:").replace("日付:", " 日付:")
+    msg_list = msg.split(" ")
+    for i in range(len(msg_list)):
+        if "場所:" in msg_list[i]:
+            city = msg_list[i].replace("場所:", "")
+        if "日付:" in msg_list[i]:
+            date = msg_list[i].replace("日付:", "")
+
+    if date != "不明":
+        date = str2date(date)
+
+
+    if city == "不明" and date == "不明":
+        raise
+    elif city == "不明":
+        city = "Osaka"
+    elif date == "不明":
+        date = dt.now(jst)
+
+    return city, date
+
+def str2date(date_str):
+    date_str = date_str.replace("月", " ", 1).replace("日", " ", 1).replace("曜", " ", 1)
+    date_str = date_str.split()
+    month = int(date_str[0])
+    day = int(date_str[1])
+    now = dt.now()
+    date = dt(now.year, month, day)
+    return date
 
 
 def make_weather_prompt():
@@ -18,15 +66,16 @@ def make_weather_prompt():
     year = now.year
     month = now.month
     day = now.day
-    weekday = WEEKDAYS[now.weekday()]
+    weekday = WEEKDAYS_EN[now.weekday()]
     # hour = now.hour
     # minute = now.minute
     # second = now.second
     weather_prompt = "\n上記の文章はどの都市の何月何日の天気について尋ねている文章ですか？"
-    weather_prompt += f"\n現在の日時は{year}年{month}月{day}日{weekday}曜日です"
-    weather_prompt += "\n以下の形式で都市名と日にちを回答してください."
-    weather_prompt += "\n回答例1: TOKYO 7月10日月曜日"
-    weather_prompt += "\n回答例2: OSAKA 12月13日火曜日"
+    weather_prompt += f"\n現在の日時は{year}年{month}月{day}日{weekday}です"
+    weather_prompt += "\n以下の形式で都市名と日付を回答してください."
+    weather_prompt += "\n[回答例1] 場所:TOKYO 日付:7月10日Mon"
+    weather_prompt += "\n[回答例2] 場所:OSAKA 日付:12月13日Tue"
+    weather_prompt += "\n[回答例3] 場所:不明 日付:10月13日Fri"
     return weather_prompt
 
 
@@ -79,7 +128,7 @@ def get_weather_current(city):
         ret += f"\n日の出: {to_jst(dt.fromtimestamp(sunrise))}"
         ret += f"\n日没: {to_jst(dt.fromtimestamp(sunset))}"
     elif response.status_code == 404:
-        ret = "天気の取得に失敗しました"
+        ret = f"{city}の現在の天気の取得に失敗しました"
     else:
         ret = "エラーが発生しました"
     return ret
