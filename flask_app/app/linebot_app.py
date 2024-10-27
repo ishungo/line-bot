@@ -123,4 +123,5 @@ def handle_message(event):
          f.write(output_msg + '\n')
 
 if __name__ == "__main__":
+    # app.run(host="0.0.0.0", port="8000", debug=True) # for debug
     app.run()
