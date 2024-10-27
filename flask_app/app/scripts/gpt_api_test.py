@@ -4,7 +4,7 @@ from pathlib import Path
 import os
 
 SCRIPT_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
-ENV_DIR = SCRIPT_DIR / '.env'
+ENV_DIR = SCRIPT_DIR.parent.parent.parent / '.env'
 load_dotenv(str(ENV_DIR))
 API_KEY = os.getenv("OPENAI_API_KEY")
 
